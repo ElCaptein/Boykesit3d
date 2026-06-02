@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>3D Boykesit ve Koridor Tasarım Sistemi v17 (Profesyonel)</title>
+    <title>3D Boykesit ve Koridor Tasarım Sistemi v18 (Profesyonel)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -30,7 +30,7 @@
         .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
         .btn-red { background: #ef4444; width: auto; padding: 5px 10px; } .btn-red:hover { background: #dc2626; }
         
-        .layer-item { display: grid; grid-template-columns: 30px 1fr 80px 30px; gap: 8px; align-items: center; background: #334155; padding: 8px; border-radius: 4px; margin-bottom: 8px; }
+        .layer-item { display: grid; grid-template-columns: 30px 1fr 100px 30px; gap: 8px; align-items: center; background: #334155; padding: 8px; border-radius: 4px; margin-bottom: 8px; }
         .layer-item input[type="color"] { width: 100%; height: 24px; border: none; padding: 0; cursor: pointer; }
         .layer-item input[type="text"] { margin: 0; border: 1px solid #475569; font-size: 11px; }
         
@@ -61,37 +61,35 @@
 </head>
 <body>
 
-<div class="loading" id="loadingIndicator">İşlem yapılıyor...<br><small style="font-size:11px; color:#94a3b8; margin-top:10px;">Bu işlem biraz zaman alabilir</small></div>
+<div class="loading" id="loadingIndicator">İşlem yapılıyor...<br><small style="font-size:11px; color:#94a3b8; margin-top:10px;">Lütfen bekleyiniz</small></div>
 
 <div class="container">
     <div class="header">
         <h1>🏗️ Profesyonel Boykesit Tasarım Sistemi</h1>
-        <div class="version">v17 | Civil 3D / AutoCAD / Netcad %100 Uyumlu | Import-Ready Format</div>
+        <div class="version">v18 | Civil 3D / AutoCAD / Netcad %100 Uyumlu | DXF Destekli</div>
     </div>
 
     <div class="main-grid">
         <div>
-            <!-- KATMANLAR BÖLÜMÜ -->
             <div class="panel">
-                <h2>1️⃣ KAT MANLAR VE GÖRÜNÜM</h2>
-                <p class="panel-info">Boykesitinizde gösterilecek tüm katmanları buradan yönetin.</p>
+                <h2>1️⃣ KATMANLAR VE GÖRÜNÜM</h2>
+                <p class="panel-info">Boykesitinizde gösterilecek tüm yüzey ve katmanları yönetin.</p>
                 <div id="layerList"></div>
                 
                 <div style="display: flex; gap: 5px; margin-top: 10px;">
                     <input type="text" id="newLayerName" placeholder="Katman Adı" style="margin-bottom:0;">
                     <select id="newLayerType" style="margin-bottom:0; width: 110px;">
-                        <option value="surface">Yüzey</option>
-                        <option value="pipe">Boru</option>
-                        <option value="ditch">Hendek</option>
+                        <option value="surface">Siyah Kot</option>
+                        <option value="pipe">Boru Hattı</option>
+                        <option value="design">Kırmızı Kot</option>
                     </select>
                     <button class="btn" style="width: 60px; padding: 8px;" onclick="addLayer()">➕</button>
                 </div>
             </div>
 
-            <!-- VERİ YÜKLEME BÖLÜMÜ -->
             <div class="panel">
-                <h2>2️⃣ KOORDINAT VERİLERİ</h2>
-                <p class="panel-info">Her katman için ölçüm verilerini yükleyin (NCN/TXT formatı)</p>
+                <h2>2️⃣ KOORDİNAT VERİLERİ</h2>
+                <p class="panel-info">Her katman için ölçüm verilerini yükleyin (NCN/TXT/CSV formatı)</p>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
                     <div>
@@ -112,10 +110,9 @@
                 <button class="btn btn-green" onclick="compileData()" style="padding: 12px; font-size: 13px; margin-top: 10px;">▶️ VERİLERİ İŞLE VE ÇİZ</button>
             </div>
 
-            <!-- PAFTA AYARLARI -->
             <div class="panel">
-                <h2>3️⃣ BOYKESIT AYARLARI</h2>
-                <p class="panel-info">Boykesit görünümünü özelleştirin</p>
+                <h2>3️⃣ BOYKESİT AYARLARI</h2>
+                <p class="panel-info">Boykesit ve DXF çizim görünümünü ölçeklendirin</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <div><label>Yatay Ölçek</label><input type="number" id="pScaleX" value="2.5" step="0.1" onchange="drawProfile()"></div>
                     <div><label>Düşey Ölçek</label><input type="number" id="pScaleY" value="15.0" step="0.5" onchange="drawProfile()"></div>
@@ -136,7 +133,6 @@
             </div>
         </div>
 
-        <!-- 3D VİZYON BÖLÜMÜ -->
         <div>
             <div class="viewport" id="viewContainer">
                 <div class="status-badge" id="modeBadge">🔹 Simülasyon Modu</div>
@@ -148,19 +144,18 @@
             </div>
 
             <div class="info-box">
-                <strong>⚙️ Özellikler:</strong> Gerçek koordinat işleme, otomatik eğim hesabı, çoklu format desteği, Netcad/AutoCAD/Civil 3D uyumluluğu
+                <strong>⚙️ Özellikler:</strong> Lineer z-kot enterpolasyonu, Hatasız gerçek DXF Çıktısı, Netcad/AutoCAD/Civil 3D uyumluluğu.
             </div>
         </div>
     </div>
 
-    <!-- BOYKESIT VE EXPORT BÖLÜMÜ -->
     <div class="profile-container" id="profileBox">
         <div class="toolbar">
             <button class="btn" style="background:#0891b2;" onclick="exportToNetcadFormat()">📥 Netcad (.txt)</button>
             <button class="btn" style="background:#16a34a;" onclick="exportXYZCoordinates()">📍 XYZ Koordinatlar (.txt)</button>
-            <button class="btn" style="background:#7c3aed;" onclick="exportToCADFormat()">📐 CAD (.dat)</button>
+            <button class="btn" style="background:#7c3aed;" onclick="exportToDXF()">📐 AutoCAD (.dxf)</button>
             <button class="btn" style="background:#ea580c;" onclick="exportCSVExcel()">📊 Excel (.csv)</button>
-            <button class="btn" style="background:#6366f1;" onclick="exportProfileImage()">🖼️ PNG (2400 DPI)</button>
+            <button class="btn" style="background:#6366f1;" onclick="exportProfileImage()">🖼️ PNG Çıktı</button>
             <button class="btn" style="background:#8b5cf6;" onclick="exportExcelFull()">📈 Tam Rapor (.xlsx)</button>
         </div>
         <canvas id="profileCanvas" height="800"></canvas>
@@ -169,13 +164,13 @@
 
 <script>
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // BÖLÜM 1: TEMELİ AYARLAR VE VERİ YÖNETİMİ
+    // BÖLÜM 1: TEMEL AYARLAR VE VERİ YÖNETİMİ
     // ═══════════════════════════════════════════════════════════════════════════════════
     
     let layers = [
-        { id: 'l_zemin', name: 'Zemin Kotu', color: '#22c55e', type: 'surface', rawPoints: [], lineType: 'CONTINUOUS' },
+        { id: 'l_zemin', name: 'Siyah Kot (Zemin)', color: '#22c55e', type: 'surface', rawPoints: [], lineType: 'CONTINUOUS' },
         { id: 'l_boru', name: 'Boru Hattı', color: '#3b82f6', type: 'pipe', rawPoints: [], lineType: 'DASHED' },
-        { id: 'l_hendek', name: 'Hendek/Şev', color: '#ef4444', type: 'ditch', rawPoints: [], lineType: 'DOTTED' }
+        { id: 'l_tasarim', name: 'Kırmızı Kot (Tasarım)', color: '#ef4444', type: 'design', rawPoints: [], lineType: 'CONTINUOUS' }
     ];
     
     let isRealDataLoaded = false;
@@ -183,7 +178,7 @@
     let scene, camera, renderer, controls, threeGroup;
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // BÖLÜM 2: 3D ÇEŞİTLİ YÜKLEMESİ VE AYARLARI
+    // BÖLÜM 2: 3D ORTAM YÜKLEMESİ VE AYARLARI
     // ═══════════════════════════════════════════════════════════════════════════════════
 
     function init3D() {
@@ -204,7 +199,6 @@
         renderer.shadowMap.type = THREE.PCFShadowShadowMap;
         container.appendChild(renderer.domElement);
 
-        // KAMERAFOKUSERİ
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.08;
@@ -212,7 +206,6 @@
         controls.enableZoom = true;
         controls.autoRotate = false;
 
-        // AYDINLATMA
         scene.add(new THREE.AmbientLight(0xffffff, 0.9));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
         dirLight.position.set(200, 300, 150);
@@ -221,14 +214,12 @@
         dirLight.shadow.mapSize.height = 2048;
         scene.add(dirLight);
 
-        // GRID VE EKSENLER
         const gridSize = 1000;
         const gridDivisions = 100;
         const grid = new THREE.GridHelper(gridSize, gridDivisions, 0x334155, 0x1a1f35);
         grid.position.y = -50;
         scene.add(grid);
 
-        // EKSEN YÖNETİMİ (X: Kırmızı, Y: Yeşil, Z: Mavi)
         const axesHelper = new THREE.AxesHelper(200);
         scene.add(axesHelper);
 
@@ -266,9 +257,9 @@
                     <input type="color" value="${l.color}" onchange="updateLayer('${l.id}', 'color', this.value)">
                     <input type="text" value="${l.name}" onchange="updateLayer('${l.id}', 'name', this.value)">
                     <select onchange="updateLayer('${l.id}', 'type', this.value)">
-                        <option value="surface" ${l.type==='surface'?'selected':''}>Yüzey</option>
-                        <option value="pipe" ${l.type==='pipe'?'selected':''}>Boru</option>
-                        <option value="ditch" ${l.type==='ditch'?'selected':''}>Hendek</option>
+                        <option value="surface" ${l.type==='surface'?'selected':''}>Siyah Kot</option>
+                        <option value="pipe" ${l.type==='pipe'?'selected':''}>Boru Hattı</option>
+                        <option value="design" ${l.type==='design'?'selected':''}>Kırmızı Kot</option>
                     </select>
                     <button class="btn btn-red" onclick="removeLayer('${l.id}')">✕</button>
                 </div>
@@ -338,9 +329,8 @@
 
             lines.forEach((line, idx) => {
                 let clean = line.trim();
-                if (!clean || idx === 0) return; // İlk satır başlık olabilir
+                if (!clean || idx === 0 && isNaN(parseFloat(clean.split(/[,\t\s]+/)[1]))) return;
 
-                // CSV veya Tab-ayrılmış format
                 let parts = clean.split(/[,\t\s]+/);
                 
                 if(parts.length >= 4) {
@@ -385,20 +375,19 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // BÖLÜM 5: VERİ DÜZENLEMESİ VE İSTASYON HESAPLAMA
+    // BÖLÜM 5: VERİ DÜZENLEMESİ VE DOĞRUSAL İSTASYON HESAPLAMA
     // ═══════════════════════════════════════════════════════════════════════════════════
 
     function compileData() {
         let baseLayer = layers.find(l => l.rawPoints.length > 1);
         if (!baseLayer) {
-            alert("En az bir katmana veri yükleyiniz!");
+            alert("Lütfen önce bir temel katmana (ör: Zemin) geçerli koordinat verisi yükleyiniz!");
             return;
         }
 
         const step = parseFloat(document.getElementById('stationStep').value) || 20;
         masterStations = [];
         
-        // İlk noktayı ekle
         let firstPt = baseLayer.rawPoints[0];
         masterStations.push({
             name: firstPt.name,
@@ -415,7 +404,6 @@
 
         let currentDist = 0;
 
-        // Dinamik istasyon seçimi
         for(let i=1; i<baseLayer.rawPoints.length; i++) {
             let pt = baseLayer.rawPoints[i];
             if (pt.distance - currentDist >= step || i === baseLayer.rawPoints.length - 1) {
@@ -435,31 +423,42 @@
             }
         }
 
-        // HER KATMAN İÇİN KOT İNTERPOLASYONU
+        // LINEER ENTERPOLASYON İLE HATASIZ KOT HESAPLAMASI
         masterStations.forEach(st => {
             st.kots = {};
             layers.forEach(l => {
                 if (l.rawPoints.length === 0) {
-                    st.kots[l.id] = st.z;
+                    st.kots[l.id] = st.z; 
                 } else {
-                    // En yakın nokta yöntemi (Lineer interpolasyon da yapılabilir)
-                    let closest = l.rawPoints.reduce((prev, curr) => 
-                        Math.abs(curr.distance - st.distance) < Math.abs(prev.distance - st.distance) ? curr : prev
-                    );
-                    st.kots[l.id] = closest.z;
+                    let exact = l.rawPoints.find(p => Math.abs(p.distance - st.distance) < 0.001);
+                    if (exact) {
+                        st.kots[l.id] = exact.z;
+                    } else {
+                        let prev = [...l.rawPoints].reverse().find(p => p.distance <= st.distance);
+                        let next = l.rawPoints.find(p => p.distance > st.distance);
+                        
+                        if (prev && next) {
+                            let ratio = (st.distance - prev.distance) / (next.distance - prev.distance);
+                            st.kots[l.id] = prev.z + ratio * (next.z - prev.z);
+                        } else if (prev) {
+                            st.kots[l.id] = prev.z;
+                        } else if (next) {
+                            st.kots[l.id] = next.z;
+                        } else {
+                            st.kots[l.id] = st.z;
+                        }
+                    }
                 }
             });
         });
 
         isRealDataLoaded = true;
         
-        // DURUM GÜNCELLE
         document.getElementById('modeBadge').innerHTML = "✅ Gerçek Veri Modu";
         document.getElementById('modeBadge').style.color = "#10b981";
         document.getElementById('modeBadge').style.borderColor = "#10b981";
         document.getElementById('modeBadge').style.background = "rgba(16, 185, 129, 0.2)";
         
-        // İSTATİSTİK GÜNCELLE
         document.getElementById('statsGrid').style.display = 'grid';
         document.getElementById('totalDistance').textContent = masterStations[masterStations.length - 1].distance.toFixed(1) + ' m';
         document.getElementById('stationCount').textContent = masterStations.length;
@@ -487,57 +486,41 @@
         let cX = 0, cY = 0, cZ = 0;
 
         if (!isRealDataLoaded) {
-            // DEMO VERİ
             for (let i = 0; i <= 8; i++) {
                 let dist = i * 25;
                 let kots = {};
-                layers.forEach((l, index) => {
-                    kots[l.id] = 100 + (index * 2) + (Math.sin(i * 0.5) * 1.5);
-                });
+                layers.forEach((l, index) => kots[l.id] = 100 + (index * 2) + (Math.sin(i * 0.5) * 1.5));
                 workingStations.push({ x: dist, y: 0, distance: dist, kots: kots });
             }
             cX = 100; cZ = 100;
         } else {
             workingStations = masterStations;
             let sumX = 0, sumY = 0, sumZ = 0;
-            workingStations.forEach(s => { 
-                sumX += s.x; 
-                sumY += s.y; 
-                sumZ += s.z; 
-            });
+            workingStations.forEach(s => { sumX += s.x; sumY += s.y; sumZ += s.z; });
             cX = sumX / workingStations.length;
             cY = sumY / workingStations.length;
             cZ = sumZ / workingStations.length;
         }
 
-        // KATMANLARı ÇİZ
         layers.forEach((l) => {
             let pts3D = [];
             workingStations.forEach(st => {
                 let lx = st.x - cX;
                 let lz = -(st.y - cY);
-                let ly = (st.kots[l.id] - cZ) * (isRealDataLoaded ? 1.2 : 1.0);
+                let ly = st.kots[l.id] - cZ; 
                 pts3D.push(new THREE.Vector3(lx, ly, lz));
             });
 
             if (pts3D.length < 2) return;
 
             const colorHex = parseInt(l.color.replace('#', ''), 16);
-            let mat = new THREE.MeshStandardMaterial({ 
-                color: colorHex, 
-                roughness: 0.6, 
-                metalness: 0.2,
-                side: THREE.DoubleSide 
-            });
+            let mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.6, metalness: 0.2, side: THREE.DoubleSide });
 
             if (l.type === 'pipe') {
-                // BORU: TUBE GEOMETRİ
                 let curve = new THREE.CatmullRomCurve3(pts3D);
                 let tubeGeo = new THREE.TubeGeometry(curve, 40, isRealDataLoaded ? 1.2 : 2, 8, false);
-                let tube = new THREE.Mesh(tubeGeo, mat);
-                threeGroup.add(tube);
+                threeGroup.add(new THREE.Mesh(tubeGeo, mat));
             } else {
-                // YÜZEY VE HENDEK: İLESKİ GEOMETRİ
                 let geo = new THREE.BufferGeometry();
                 let verts = [], inds = [], norms = [];
                 let w = isRealDataLoaded ? 6 : 12;
@@ -564,8 +547,9 @@
                         inds.push(c, c+1, nx);
                         inds.push(c+1, nx+1, nx);
                     }
-                } else if (l.type === 'ditch') {
-                    let drop = isRealDataLoaded ? 1.2 : 3;
+                } else if (l.type === 'design') {
+                    // Kazı/Dolgu şev tasarımı görünümü
+                    let drop = isRealDataLoaded ? 1.5 : 3;
                     for(let i=0; i<pts3D.length; i++) {
                         let p = pts3D[i], n = norms[i];
                         verts.push(p.x + n.x*w, p.y - drop, p.z + n.z*w);
@@ -592,7 +576,7 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // BÖLÜM 7: BOYKESIT ÇİZİMİ (CANVAS)
+    // BÖLÜM 7: BOYKESİT ÇİZİMİ (CANVAS)
     // ═══════════════════════════════════════════════════════════════════════════════════
 
     function drawProfile() {
@@ -624,11 +608,9 @@
         const getX = (d) => padL + (d * sX);
         const getY = (z) => groundY - (z - datumZ) * sY;
 
-        // ARKA PLAN
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // YATAY RİJON ÇİZGİLERİ
         ctx.strokeStyle = "#e2e8f0";
         ctx.lineWidth = 1;
         for (let z = datumZ; z <= maxZ + 2; z += 2) {
@@ -643,7 +625,6 @@
             ctx.fillText(z.toFixed(2) + " m", padL - 10, py + 4);
         }
 
-        // TABEL KUTULARI
         ctx.strokeStyle = "#0f172a";
         ctx.lineWidth = 1.5;
         for(let i=0; i<=rows.length; i++) {
@@ -653,42 +634,27 @@
             ctx.lineTo(canvas.width - padR, py);
             ctx.stroke();
         }
-        ctx.beginPath();
-        ctx.moveTo(10, groundY);
-        ctx.lineTo(10, groundY + gridH);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(padL, groundY);
-        ctx.lineTo(padL, groundY + gridH);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(10, groundY); ctx.lineTo(10, groundY + gridH); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(padL, groundY); ctx.lineTo(padL, groundY + gridH); ctx.stroke();
 
-        // SATIR ETİKETLERİ
         ctx.font = `bold ${fontSize+1}px Arial`;
         ctx.textAlign = "left";
         rows.forEach((rText, i) => {
-            let color;
-            if (i < layers.length) color = layers[i].color;
-            else if (i === layers.length) color = "#1e3a8a";
-            else if (i === layers.length + 1) color = "#374151";
-            else if (i === layers.length + 2) color = "#0369a1";
-            else color = "#991b1b";
+            let color = (i < layers.length) ? layers[i].color : (i === layers.length ? "#1e3a8a" : (i === layers.length + 1 ? "#374151" : (i === layers.length + 2 ? "#0369a1" : "#991b1b")));
             ctx.fillStyle = color;
             ctx.fillText(rText, 20, groundY + (i * rowH) + (rowH/2) + 5);
         });
 
-        // KOT BİLGİSİ
         ctx.fillStyle = "#374151";
         ctx.font = `bold ${fontSize+4}px Arial`;
         ctx.fillText(`KIYAS KOTU: ${datumZ}.00 m`, padL, groundY - 15);
 
-        // KATMANLARı ÇİZ (ÇİZGİ ÇIKIŞ)
         layers.forEach((l) => {
             ctx.beginPath();
             ctx.strokeStyle = l.color;
             ctx.lineWidth = 3;
             
             if(l.type === 'pipe') ctx.setLineDash([10, 5]);
-            else if(l.type === 'ditch') ctx.setLineDash([5, 2, 2, 2]);
             else ctx.setLineDash([]);
             
             masterStations.forEach((st, idx) => {
@@ -699,14 +665,11 @@
             });
             ctx.stroke();
         });
-
         ctx.setLineDash([]);
 
-        // İSTASYON VERİLERİ
         masterStations.forEach((st, i) => {
             let px = getX(st.distance);
 
-            // DÜŞEYİ AYNI ÇİZGİSİ
             ctx.beginPath();
             ctx.strokeStyle = "#cbd5e1";
             ctx.lineWidth = 0.5;
@@ -716,7 +679,6 @@
 
             ctx.font = `bold ${fontSize}px monospace`;
 
-            // KOT DEĞERLERİ
             layers.forEach((l, idx) => {
                 let cellCenterY = groundY + (idx * rowH) + (rowH / 2);
                 ctx.save();
@@ -728,37 +690,22 @@
                 ctx.restore();
             });
 
-            // ARA MESAFE
-            let araY = groundY + (layers.length * rowH) + (rowH / 2);
-            ctx.save();
-            ctx.translate(px + 3, araY);
-            ctx.rotate(Math.PI / 2);
-            ctx.fillStyle = "#1e3a8a";
-            ctx.textAlign = "center";
-            ctx.fillText(st.deltaDist.toFixed(2), 0, 0);
-            ctx.restore();
+            let vals = [
+                { y: groundY + (layers.length * rowH) + (rowH / 2), val: st.deltaDist.toFixed(2), c: "#1e3a8a" },
+                { y: groundY + ((layers.length + 1) * rowH) + (rowH / 2), val: st.distance.toFixed(2), c: "#0f172a" },
+                { y: groundY + ((layers.length + 2) * rowH) + (rowH / 2), val: (st.distance / 1000).toFixed(3), c: "#0369a1" }
+            ];
 
-            // KÜMÜLATİF MESAFE (m)
-            let kumY = groundY + ((layers.length + 1) * rowH) + (rowH / 2);
-            ctx.save();
-            ctx.translate(px + 3, kumY);
-            ctx.rotate(Math.PI / 2);
-            ctx.fillStyle = "#0f172a";
-            ctx.textAlign = "center";
-            ctx.fillText(st.distance.toFixed(2), 0, 0);
-            ctx.restore();
+            vals.forEach(v => {
+                ctx.save();
+                ctx.translate(px + 3, v.y);
+                ctx.rotate(Math.PI / 2);
+                ctx.fillStyle = v.c;
+                ctx.textAlign = "center";
+                ctx.fillText(v.val, 0, 0);
+                ctx.restore();
+            });
 
-            // KÜMÜLATİF MESAFE (km)
-            let kmY = groundY + ((layers.length + 2) * rowH) + (rowH / 2);
-            ctx.save();
-            ctx.translate(px + 3, kmY);
-            ctx.rotate(Math.PI / 2);
-            ctx.fillStyle = "#0369a1";
-            ctx.textAlign = "center";
-            ctx.fillText((st.distance / 1000).toFixed(3), 0, 0);
-            ctx.restore();
-
-            // EĞİM HESAPLAMASı VE GÖSTERİMİ
             if (i < masterStations.length - 1) {
                 let nextSt = masterStations[i+1];
                 let designL = layers[layers.length - 1];
@@ -776,101 +723,153 @@
                 ctx.fillText(`${slope >= 0 ? '+' : ''}${slope.toFixed(2)}%`, midX, slopeRowY);
                 ctx.restore();
 
-                // EĞIM OKU
                 let midY = getY(st.kots[designL.id] + (zDiff/2));
                 ctx.fillStyle = slope >= 0 ? "#ef4444" : "#3b82f6";
                 ctx.beginPath();
-                if (slope >= 0) {
-                    ctx.moveTo(midX, midY - 15);
-                    ctx.lineTo(midX - 5, midY - 5);
-                    ctx.lineTo(midX + 5, midY - 5);
-                } else {
-                    ctx.moveTo(midX, midY + 15);
-                    ctx.lineTo(midX - 5, midY + 5);
-                    ctx.lineTo(midX + 5, midY + 5);
-                }
+                if (slope >= 0) { ctx.moveTo(midX, midY - 15); ctx.lineTo(midX - 5, midY - 5); ctx.lineTo(midX + 5, midY - 5); } 
+                else { ctx.moveTo(midX, midY + 15); ctx.lineTo(midX - 5, midY + 5); ctx.lineTo(midX + 5, midY + 5); }
                 ctx.fill();
             }
         });
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // BÖLÜM 8: EXPORT FONKSİYONLARI (NETCAD, CAD, XYZ, CSV, PNG, EXCEL)
+    // BÖLÜM 8: EXPORT FONKSİYONLARI (DXF, NETCAD, CSV, EXCEL)
     // ═══════════════════════════════════════════════════════════════════════════════════
 
-    function showLoading(show) {
-        document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
-    }
+    function showLoading(show) { document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none'; }
 
-    // --- EXPORT 1: NETCAD UYUMLU FORMAT (.txt) ---
-    function exportToNetcadFormat() {
+  // --- GERÇEK DXF (AUTOCAD/CIVIL 3D) DIŞA AKTARIMI ---
+    function exportToDXF() {
         if (!isRealDataLoaded || masterStations.length < 2) {
-            alert("Önce verileri hesaplayınız!");
+            alert("Lütfen önce verileri yükleyip hesaplayınız!");
             return;
         }
 
         showLoading(true);
         setTimeout(() => {
             try {
-                let netcad = "";
-                netcad += "NETCADv10\r\n"; // Netcad başlığı
-                netcad += "BOYKESIT_PROFIL\r\n";
-                netcad += "KOORDINAT_SISTEMI:KABULLU\r\n";
-                netcad += "\r\n";
+                let dxf = [];
+                // DXF Header ve Entities başlangıcı
+                dxf.push("0", "SECTION", "2", "ENTITIES");
 
-                // KATMAN DEFİNİSYONLARI
-                layers.forEach((l, idx) => {
-                    netcad += `KATMAN,${idx+1},${l.name}\r\n`;
-                });
-                netcad += "\r\n";
-
-                // İSTASYON VERİLERİ
-                netcad += "ISTASYONLAR\r\n";
-                netcad += "AD,MESAFE,DELTA";
-                layers.forEach(l => {
-                    netcad += "," + l.name.replace(/,/g, "");
-                });
-                netcad += "\r\n";
-
-                masterStations.forEach((st) => {
-                    netcad += `${st.name},${st.distance.toFixed(4)},${st.deltaDist.toFixed(4)}`;
-                    layers.forEach((l) => {
-                        netcad += "," + st.kots[l.id].toFixed(4);
-                    });
-                    netcad += "\r\n";
-                });
-
-                downloadFile(netcad, 'Boykesit_Netcad.txt', 'text/plain');
-                showLoading(false);
-                alert("✅ Netcad formatı başarıyla oluşturuldu!");
-            } catch(e) {
-                alert("Hata: " + e.message);
-                showLoading(false);
-            }
-        }, 100);
-    }
-
-    // --- EXPORT 2: XYZ KOORDİNATLAR (.txt) ---
-    function exportXYZCoordinates() {
-        if (!isRealDataLoaded || masterStations.length < 2) {
-            alert("Önce verileri hesaplayınız!");
-            return;
-        }
-
-        showLoading(true);
-        setTimeout(() => {
-            try {
-                let xyz = "Nokta,Easting,Northing,Elevation,Tabaka\r\n";
+                const sX = parseFloat(document.getElementById('pScaleX').value) || 2.5;
+                const sY = parseFloat(document.getElementById('pScaleY').value) || 15.0;
                 
-                masterStations.forEach((st) => {
-                    layers.forEach(l => {
-                        xyz += `${st.name}_${l.name.substring(0,4)},${st.easting.toFixed(4)},${st.northing.toFixed(4)},${st.kots[l.id].toFixed(4)},${l.name}\r\n`;
-                    });
+                let allKots = [];
+                masterStations.forEach(st => Object.values(st.kots).forEach(v => allKots.push(v)));
+                let minZ = Math.min(...allKots);
+                let maxZ = Math.max(...allKots);
+                let datumZ = Math.floor(minZ - 5);
+
+                const getDX = (d) => d * sX;
+                const getDY = (z) => (z - datumZ) * sY;
+                
+                // 1. DÜZELTME: "EĞİM (%)" SATIRI EKLENDİ
+                let rows = [...layers.map(l => l.name), "ARA MESAFE", "KUM. MESAFE (m)", "KUM. MESAFE (km)", "EĞİM (%)"];
+                let rowH = 15; // DXF tablosu için optimize edilmiş yükseklik
+                let groundY = 0; 
+
+                // Yardımcı DXF çizgi komutu
+                const addLine = (x1, y1, x2, y2, layer) => {
+                    dxf.push("0", "LINE", "8", layer, "10", x1.toFixed(3), "20", y1.toFixed(3), "11", x2.toFixed(3), "21", y2.toFixed(3));
+                };
+                
+                // 2. DÜZELTME: CAD YAZI HİZALAMA KODLARI (72 ve 73) EKLENDİ
+                const addText = (text, x, y, height, rot, layer, align="LEFT") => {
+                    dxf.push("0", "TEXT", "8", layer, "10", x.toFixed(3), "20", y.toFixed(3), "40", height.toFixed(2), "1", String(text));
+                    if (rot !== 0) dxf.push("50", rot.toFixed(2));
+                    
+                    if (align === "CENTER") {
+                        // 72:1(Center), 73:2(Middle) -> Hücrenin tam ortası
+                        dxf.push("72", "1", "11", x.toFixed(3), "21", y.toFixed(3), "73", "2");
+                    } else if (align === "RIGHT") {
+                        // 72:2(Right), 73:2(Middle) -> Sağa dayalı
+                        dxf.push("72", "2", "11", x.toFixed(3), "21", y.toFixed(3), "73", "2");
+                    }
+                };
+
+                let totalDist = masterStations[masterStations.length-1].distance;
+                let maxX = getDX(totalDist);
+                let maxY = getDY(maxZ + 2);
+
+                // YATAY GRID VE KOT YAZILARI
+                for (let z = datumZ; z <= maxZ + 2; z += 2) {
+                    let py = getDY(z);
+                    addLine(0, py, maxX, py, "GRID");
+                    addText(z.toFixed(2) + " m", -5, py, 3, 0, "YAZI_KOT_EKSENI", "RIGHT");
+                }
+
+                // TABLO ÇİZGİLERİ VE BAŞLIKLARI (Sağa dayalı hizalama)
+                for(let i=0; i<=rows.length; i++) {
+                    let py = groundY - (i * rowH);
+                    addLine(0, py, maxX, py, "TABLO_CIZGI");
+                    if (i < rows.length) {
+                        addText(rows[i], -5, py - (rowH/2), 3.5, 0, "TABLO_BASLIK", "RIGHT");
+                    }
+                }
+                
+                // TABLO ÇERÇEVESİ KAPANIŞ
+                addLine(0, groundY, 0, groundY - (rows.length * rowH), "TABLO_CIZGI");
+                addLine(maxX, groundY, maxX, groundY - (rows.length * rowH), "TABLO_CIZGI");
+
+                // GERÇEK PROFIL ÇİZGİLERİ
+                layers.forEach((l) => {
+                    for(let i=0; i<masterStations.length - 1; i++) {
+                        let st1 = masterStations[i];
+                        let st2 = masterStations[i+1];
+                        addLine(getDX(st1.distance), getDY(st1.kots[l.id]), getDX(st2.distance), getDY(st2.kots[l.id]), "PROFIL_" + l.id.toUpperCase());
+                    }
                 });
 
-                downloadFile(xyz, 'Boykesit_XYZ_Koordinatlar.txt', 'text/plain');
+                // DİKEY İSTASYON ÇİZGİLERİ VE YAZILAR
+                masterStations.forEach((st, i) => {
+                    let px = getDX(st.distance);
+                    addLine(px, maxY, px, groundY - (rows.length * rowH), "GRID_DIKEY");
+
+                    // Katman Kotları (Center hizalama ile tablonun tam ortasına)
+                    layers.forEach((l, idx) => {
+                        let py = groundY - (idx * rowH) - (rowH / 2);
+                        addText(st.kots[l.id].toFixed(2), px, py, 3, 90, "YAZI_KOT_DEGER", "CENTER");
+                    });
+
+                    // Ara Mesafe
+                    let araY = groundY - (layers.length * rowH) - (rowH / 2);
+                    addText(st.deltaDist.toFixed(2), px, araY, 3, 90, "YAZI_MESAFE", "CENTER");
+
+                    // Kümülatif (m)
+                    let kumY = groundY - ((layers.length + 1) * rowH) - (rowH / 2);
+                    addText(st.distance.toFixed(2), px, kumY, 3, 90, "YAZI_MESAFE", "CENTER");
+
+                    // Kümülatif (km)
+                    let kmY = groundY - ((layers.length + 2) * rowH) - (rowH / 2);
+                    addText((st.distance / 1000).toFixed(3), px, kmY, 3, 90, "YAZI_MESAFE", "CENTER");
+                    
+                    // 3. DÜZELTME: EĞİM HESAPLAMALARI VE TABLO İÇİNE YAZDIRILMASI
+                    if (i < masterStations.length - 1) {
+                        let nextSt = masterStations[i+1];
+                        let designL = layers[layers.length - 1]; // Eğim için en alttaki katman referansı alınır
+                        let distDiff = nextSt.distance - st.distance;
+                        let zDiff = nextSt.kots[designL.id] - st.kots[designL.id];
+                        let slope = distDiff > 0 ? (zDiff / distDiff) * 100 : 0;
+                        
+                        let midX = px + getDX(distDiff) / 2;
+                        let slopeRowY = groundY - ((layers.length + 3) * rowH) - (rowH / 2);
+                        
+                        // Eğimi istasyon aralığının tam ortasına ve yatay olarak yazdırır
+                        addText(`${slope >= 0 ? '+' : ''}${slope.toFixed(2)}%`, midX, slopeRowY, 3, 0, "YAZI_EGIM", "CENTER");
+                    }
+                });
+
+                // 4. DÜZELTME: KIYAS KOTU YAZISI ÇAKIŞMAYI ÖNLEMEK İÇİN YUKARI ALINDI
+                addText(`KIYAS KOTU: ${datumZ}.00 m`, 0, groundY + 4, 4, 0, "YAZI_BASLIK", "LEFT");
+
+                // DXF Bitişi
+                dxf.push("0", "ENDSEC", "0", "EOF");
+
+                downloadFile(dxf.join('\r\n'), `Boykesit_Cizim_${new Date().getTime()}.dxf`, 'application/dxf');
                 showLoading(false);
-                alert("✅ XYZ koordinatları başarıyla oluşturuldu!");
+                alert("✅ Hatasız DXF çizimi başarıyla oluşturuldu! Eksik öğeler tamamlandı.");
             } catch(e) {
                 alert("Hata: " + e.message);
                 showLoading(false);
@@ -878,156 +877,93 @@
         }, 100);
     }
 
-    // --- EXPORT 3: CAD UYUMLU FORMAT (.dat) ---
-    function exportToCADFormat() {
-        if (!isRealDataLoaded || masterStations.length < 2) {
-            alert("Önce verileri hesaplayınız!");
-            return;
-        }
-
+    function exportToNetcadFormat() {
+        if (!isRealDataLoaded) return;
         showLoading(true);
         setTimeout(() => {
-            try {
-                let cad = "AUTOCAD_UYUMLU_BILGI\r\n";
-                cad += "BOYKESIT_VERİ_DOSYASI\r\n";
-                cad += `TARIH:${new Date().toLocaleDateString('tr-TR')}\r\n`;
-                cad += `SAAT:${new Date().toLocaleTimeString('tr-TR')}\r\n`;
-                cad += "\r\n";
-                cad += "KATMAN_TANIMLARI\r\n";
-                cad += "-".repeat(80) + "\r\n";
+            let netcad = "NETCADv10\r\nBOYKESIT_PROFIL\r\nKOORDINAT_SISTEMI:KABULLU\r\n\r\n";
+            layers.forEach((l, idx) => netcad += `KATMAN,${idx+1},${l.name}\r\n`);
+            netcad += "\r\nISTASYONLAR\r\nAD,MESAFE,DELTA";
+            layers.forEach(l => netcad += "," + l.name.replace(/,/g, ""));
+            netcad += "\r\n";
 
-                layers.forEach((l, idx) => {
-                    cad += `LAYER ${idx+1}: ${l.name}\r\n`;
-                    cad += `  RENK: ${l.color}\r\n`;
-                    cad += `  TIP: ${l.type === 'pipe' ? 'BORU' : l.type === 'surface' ? 'YUZEY' : 'HENDEK'}\r\n`;
-                    cad += `  LINETYPE: ${l.lineType}\r\n`;
-                    cad += "\r\n";
-                });
-
-                cad += "\r\nKOORDINAT_VERİLERİ\r\n";
-                cad += "-".repeat(80) + "\r\n";
-                cad += "POINT,X,Y,Z,LAYER\r\n";
-
-                masterStations.forEach((st, stIdx) => {
-                    layers.forEach((l, lIdx) => {
-                        cad += `PT${stIdx}_L${lIdx},${st.distance.toFixed(4)},0,${st.kots[l.id].toFixed(4)},${l.name}\r\n`;
-                    });
-                });
-
-                downloadFile(cad, 'Boykesit_CAD.dat', 'text/plain');
-                showLoading(false);
-                alert("✅ CAD formatı başarıyla oluşturuldu!");
-            } catch(e) {
-                alert("Hata: " + e.message);
-                showLoading(false);
-            }
+            masterStations.forEach((st) => {
+                netcad += `${st.name},${st.distance.toFixed(4)},${st.deltaDist.toFixed(4)}`;
+                layers.forEach((l) => netcad += "," + st.kots[l.id].toFixed(4));
+                netcad += "\r\n";
+            });
+            downloadFile(netcad, 'Boykesit_Netcad.txt', 'text/plain');
+            showLoading(false);
         }, 100);
     }
 
-    // --- EXPORT 4: CSV (EXCEL) ---
+    function exportXYZCoordinates() {
+        if (!isRealDataLoaded) return;
+        showLoading(true);
+        setTimeout(() => {
+            let xyz = "Nokta,Easting,Northing,Elevation,Tabaka\r\n";
+            masterStations.forEach((st) => {
+                layers.forEach(l => xyz += `${st.name}_${l.name.substring(0,4)},${st.easting.toFixed(4)},${st.northing.toFixed(4)},${st.kots[l.id].toFixed(4)},${l.name}\r\n`);
+            });
+            downloadFile(xyz, 'Boykesit_XYZ.txt', 'text/plain');
+            showLoading(false);
+        }, 100);
+    }
+
     function exportCSVExcel() {
-        if (!isRealDataLoaded || masterStations.length < 2) {
-            alert("Önce verileri hesaplayınız!");
-            return;
-        }
-
+        if (!isRealDataLoaded) return;
         showLoading(true);
         setTimeout(() => {
-            try {
-                let csv = "İstasyon,Mesafe(m),DeltaDist(m)";
-                layers.forEach(l => {
-                    csv += "," + l.name.replace(/,/g, "");
-                });
+            let csv = "İstasyon,Mesafe(m),DeltaDist(m)";
+            layers.forEach(l => csv += "," + l.name.replace(/,/g, ""));
+            csv += "\n";
+            masterStations.forEach((st) => {
+                csv += `"${st.name}",${st.distance.toFixed(4)},${st.deltaDist.toFixed(4)}`;
+                layers.forEach((l) => csv += "," + st.kots[l.id].toFixed(4));
                 csv += "\n";
-
-                masterStations.forEach((st) => {
-                    csv += `"${st.name}",${st.distance.toFixed(4)},${st.deltaDist.toFixed(4)}`;
-                    layers.forEach((l) => {
-                        csv += "," + st.kots[l.id].toFixed(4);
-                    });
-                    csv += "\n";
-                });
-
-                downloadFile(csv, 'Boykesit.csv', 'text/csv');
-                showLoading(false);
-                alert("✅ CSV dosyası başarıyla oluşturuldu!");
-            } catch(e) {
-                alert("Hata: " + e.message);
-                showLoading(false);
-            }
+            });
+            downloadFile(csv, 'Boykesit.csv', 'text/csv');
+            showLoading(false);
         }, 100);
     }
 
-    // --- EXPORT 5: PNG (YÜKSEK KALİTE) ---
     function exportProfileImage() {
-        if (!isRealDataLoaded || masterStations.length < 2) {
-            alert("Önce verileri hesaplayınız!");
-            return;
-        }
-
+        if (!isRealDataLoaded) return;
         showLoading(true);
         setTimeout(() => {
-            try {
-                const canvas = document.getElementById('profileCanvas');
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png', 1.0);
-                link.download = `Boykesit_${new Date().getTime()}.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showLoading(false);
-                alert("✅ PNG resim başarıyla indirildi!");
-            } catch(e) {
-                alert("Hata: " + e.message);
-                showLoading(false);
-            }
+            const canvas = document.getElementById('profileCanvas');
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.download = `Boykesit_${new Date().getTime()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showLoading(false);
         }, 100);
     }
 
-    // --- EXPORT 6: EXCEL RAPOR (.xlsx) ---
     function exportExcelFull() {
         if (!isRealDataLoaded) return;
-
         showLoading(true);
         setTimeout(() => {
             try {
-                // Sayfa 1: Boykesit Verileri
                 let headers = ["İstasyon", "Mesafe (m)", "Delta (m)", "Easting", "Northing", "Elevation", ...layers.map(l => l.name)];
                 let data1 = [headers];
                 
                 masterStations.forEach(s => {
-                    data1.push([
-                        s.name,
-                        s.distance.toFixed(4),
-                        s.deltaDist.toFixed(4),
-                        s.easting.toFixed(4),
-                        s.northing.toFixed(4),
-                        s.elevation.toFixed(4),
-                        ...layers.map(l => s.kots[l.id].toFixed(4))
-                    ]);
+                    data1.push([s.name, s.distance.toFixed(4), s.deltaDist.toFixed(4), s.easting.toFixed(4), s.northing.toFixed(4), s.elevation.toFixed(4), ...layers.map(l => s.kots[l.id].toFixed(4))]);
                 });
 
-                // Sayfa 2: Eğim Analizi
                 let data2 = [["İstasyon Başlangıç", "İstasyon Sonu", "Mesafe Farkı", "Yükseklik Farkı", "Eğim (%)"]];
                 let designL = layers[layers.length - 1];
                 
                 for (let i = 0; i < masterStations.length - 1; i++) {
-                    let st = masterStations[i];
-                    let nextSt = masterStations[i+1];
-                    let distDiff = nextSt.distance - st.distance;
-                    let zDiff = nextSt.kots[designL.id] - st.kots[designL.id];
+                    let st = masterStations[i], nextSt = masterStations[i+1];
+                    let distDiff = nextSt.distance - st.distance, zDiff = nextSt.kots[designL.id] - st.kots[designL.id];
                     let slope = distDiff > 0 ? (zDiff / distDiff) * 100 : 0;
-                    
-                    data2.push([
-                        st.name,
-                        nextSt.name,
-                        distDiff.toFixed(4),
-                        zDiff.toFixed(4),
-                        slope.toFixed(2)
-                    ]);
+                    data2.push([st.name, nextSt.name, distDiff.toFixed(4), zDiff.toFixed(4), slope.toFixed(2)]);
                 }
 
-                // Sayfa 3: Özet İstatistikler
                 let allKots = [];
                 masterStations.forEach(st => Object.values(st.kots).forEach(v => allKots.push(v)));
                 
@@ -1036,21 +972,13 @@
                     ["Toplam Mesafe (m)", masterStations[masterStations.length-1].distance.toFixed(2)],
                     ["İstasyon Sayısı", masterStations.length],
                     ["Minimum Kota (m)", Math.min(...allKots).toFixed(2)],
-                    ["Maksimum Kota (m)", Math.max(...allKots).toFixed(2)],
-                    ["Ortalama Kota (m)", (allKots.reduce((a,b)=>a+b)/allKots.length).toFixed(2)],
-                    ["Katman Sayısı", layers.length]
+                    ["Maksimum Kota (m)", Math.max(...allKots).toFixed(2)]
                 ];
 
                 let wb = XLSX.utils.book_new();
-                
-                let ws1 = XLSX.utils.aoa_to_sheet(data1);
-                ws1['!cols'] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, ...Array(layers.length).fill({ wch: 12 })];
-                
-                let ws2 = XLSX.utils.aoa_to_sheet(data2);
-                ws2['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
-                
-                let ws3 = XLSX.utils.aoa_to_sheet(data3);
-                ws3['!cols'] = [{ wch: 25 }, { wch: 15 }];
+                let ws1 = XLSX.utils.aoa_to_sheet(data1); ws1['!cols'] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, ...Array(layers.length).fill({ wch: 12 })];
+                let ws2 = XLSX.utils.aoa_to_sheet(data2); ws2['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
+                let ws3 = XLSX.utils.aoa_to_sheet(data3); ws3['!cols'] = [{ wch: 25 }, { wch: 15 }];
 
                 XLSX.utils.book_append_sheet(wb, ws1, "Boykesit Verileri");
                 XLSX.utils.book_append_sheet(wb, ws2, "Eğim Analizi");
@@ -1058,15 +986,12 @@
 
                 XLSX.writeFile(wb, `Boykesit_Tam_Raporu_${new Date().getTime()}.xlsx`);
                 showLoading(false);
-                alert("✅ Excel raporu başarıyla oluşturuldu!");
             } catch(e) {
-                alert("Hata: " + e.message);
-                showLoading(false);
+                alert("Hata: " + e.message); showLoading(false);
             }
         }, 100);
     }
 
-    // --- YARDIMCI FONKSİYON: DOSYA İNDİRME ---
     function downloadFile(content, filename, mimeType) {
         let blob = new Blob([content], { type: mimeType + ";charset=utf-8" });
         let url = URL.createObjectURL(blob);
@@ -1079,14 +1004,7 @@
         URL.revokeObjectURL(url);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // BAŞLATMA
-    // ═══════════════════════════════════════════════════════════════════════════════════
-
-    window.onload = () => {
-        init3D();
-        renderUI();
-    };
+    window.onload = () => { init3D(); renderUI(); };
 </script>
 </body>
 </html>

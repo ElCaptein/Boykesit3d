@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>3D Boykesit ve Koridor Tasarım Sistemi v19.1 (Düzeltilmiş Sürüm)</title>
+    <title>3D Boykesit ve Koridor Tasarım Sistemi v19.2 (Düzeltilmiş Sürüm)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -82,7 +82,7 @@
 <div class="container">
     <div class="header">
         <h1>🏗️ Profesyonel Boykesit Tasarım Sistemi</h1>
-        <div class="version">v19.1 | Civil 3D / AutoCAD / Netcad Uyumlu | Optimize Edilmiş Okunabilirlik</div>
+        <div class="version">v19.2 | Civil 3D / AutoCAD / Netcad Uyumlu | Optimize Edilmiş Okunabilirlik ve DXF Çıktısı</div>
     </div>
 
     <div class="main-grid">
@@ -400,18 +400,16 @@
             return;
         }
 
-        // KM YÖNÜ BELİRLEME
         let startDir = confirm("0+000 KM başlangıcı, ilk yüklediğiniz noktadan (Nokta 1) başlasın mı?\n\nTAMAM: Gidiş Yönü (Nokta 1 -> Nokta N)\nİPTAL: Dönüş Yönü (Nokta N -> Nokta 1)");
         
-        setLoading(true, 'İstasyonlar ve Yön hesaplanıyor...', 'Lütfen bekleyin...', 20);
+        setLoading(true, 'Dinamik İstasyonlar ve İnterpolasyon Hesaplanıyor...', 'Lütfen bekleyin...', 20);
 
         setTimeout(() => {
-            // Yön iptal edildiyse tüm katmanlardaki verileri tersine çevir
             if (!startDir) {
                 layers.forEach(l => l.rawPoints.reverse());
             }
 
-            // Ham noktalardaki mesafeleri yeniden hesapla (Gerçek 3D Kuş Uçuşu)
+            // Ham noktalardaki 3D kuş uçuşu mesafeleri hesapla
             layers.forEach(l => {
                 let dist = 0;
                 for(let i=0; i<l.rawPoints.length; i++) {
@@ -429,38 +427,87 @@
             const step = parseFloat(document.getElementById('stationStep').value) || 20;
             masterStations = [];
             
-            let firstPt = baseLayer.rawPoints[0];
-            masterStations.push({ name: firstPt.name, x: firstPt.x, y: firstPt.y, z: firstPt.z, distance: 0, deltaDist: 0, easting: firstPt.easting, northing: firstPt.northing, elevation: firstPt.elevation, kots: {} });
+            let basePoints = baseLayer.rawPoints;
+            let maxDist = basePoints[basePoints.length - 1].distance;
 
-            let currentDist = 0;
-            for(let i=1; i<baseLayer.rawPoints.length; i++) {
-                let pt = baseLayer.rawPoints[i];
-                if (pt.distance - currentDist >= step || i === baseLayer.rawPoints.length - 1) {
-                    masterStations.push({ name: pt.name, x: pt.x, y: pt.y, z: pt.z, distance: pt.distance, deltaDist: pt.distance - currentDist, easting: pt.easting, northing: pt.northing, elevation: pt.elevation, kots: {} });
-                    currentDist = pt.distance;
-                }
+            // DÜZELTME: Girilen adıma tam uyan istasyon listesi oluşturuluyor (0, 20, 40...)
+            let targetDistances = [];
+            let currS = 0;
+            while(currS < maxDist) {
+                targetDistances.push(currS);
+                currS += step;
+            }
+            if(maxDist - (currS - step) > 0.001) {
+                targetDistances.push(maxDist);
             }
 
-            masterStations.forEach(st => {
-                st.kots = {};
+            // Belirlenen düzenli istasyonlara göre interpolasyon yapılıyor
+            targetDistances.forEach((dVal, idx) => {
+                let low = 0, high = basePoints.length - 1;
+                let prev = basePoints[0], next = basePoints[basePoints.length - 1];
+                while (low <= high) {
+                    let mid = Math.floor((low + high) / 2);
+                    if (basePoints[mid].distance <= dVal) {
+                        prev = basePoints[mid]; low = mid + 1;
+                    } else {
+                        next = basePoints[mid]; high = mid - 1;
+                    }
+                }
+
+                let stX = prev.x, stY = prev.y, stE = prev.easting, stN = prev.northing, stName = prev.name;
+                if (prev && next && Math.abs(next.distance - prev.distance) > 0.0001) {
+                    let ratio = (dVal - prev.distance) / (next.distance - prev.distance);
+                    stX = prev.x + ratio * (next.x - prev.x);
+                    stY = prev.y + ratio * (next.y - prev.y);
+                    stE = prev.easting + ratio * (next.easting - prev.easting);
+                    stN = prev.northing + ratio * (next.northing - prev.northing);
+                    if (ratio < 0.1) stName = prev.name;
+                    else if (ratio > 0.9) stName = next.name;
+                    else {
+                        let kmPart = Math.floor(dVal / 1000);
+                        let mPart = Math.round(dVal % 1000);
+                        stName = `${kmPart}+${mPart.toString().padStart(3, '0')}`;
+                    }
+                }
+
+                let deltaD = (idx === 0) ? 0 : (dVal - targetDistances[idx - 1]);
+
+                let stObj = {
+                    name: stName,
+                    x: stX, y: stY, z: prev.z,
+                    distance: dVal,
+                    deltaDist: deltaD,
+                    easting: stE, northing: stN,
+                    elevation: prev.z,
+                    kots: {}
+                };
+
+                // Tüm katmanların kotlarını bu düzenli istasyon noktasına enterpole et
                 layers.forEach(l => {
-                    if (l.rawPoints.length === 0) { st.kots[l.id] = st.z; return; }
-                    let low = 0, high = l.rawPoints.length - 1, prev = null, next = null;
-                    while (low <= high) {
-                        let mid = Math.floor((low + high) / 2);
-                        if (l.rawPoints[mid].distance <= st.distance) {
-                            prev = l.rawPoints[mid]; low = mid + 1;
+                    if (l.rawPoints.length === 0) { stObj.kots[l.id] = stObj.z; return; }
+                    let lLow = 0, lHigh = l.rawPoints.length - 1;
+                    let lPrev = l.rawPoints[0], lNext = l.rawPoints[l.rawPoints.length - 1];
+                    while (lLow <= lHigh) {
+                        let lMid = Math.floor((lLow + lHigh) / 2);
+                        if (l.rawPoints[lMid].distance <= dVal) {
+                            lPrev = l.rawPoints[lMid]; lLow = lMid + 1;
                         } else {
-                            next = l.rawPoints[mid]; high = mid - 1;
+                            lNext = l.rawPoints[lMid]; lHigh = lMid - 1;
                         }
                     }
-                    if (prev && next && Math.abs(next.distance - prev.distance) > 0.0001) {
-                        let ratio = (st.distance - prev.distance) / (next.distance - prev.distance);
-                        st.kots[l.id] = prev.z + ratio * (next.z - prev.z);
-                    } else if (prev) { st.kots[l.id] = prev.z; }
-                    else if (next) { st.kots[l.id] = next.z; }
-                    else { st.kots[l.id] = st.z; }
+                    if (lPrev && lNext && Math.abs(lNext.distance - lPrev.distance) > 0.0001) {
+                        let ratio = (dVal - lPrev.distance) / (lNext.distance - lPrev.distance);
+                        stObj.kots[l.id] = lPrev.z + ratio * (lNext.z - lPrev.z);
+                    } else {
+                        stObj.kots[l.id] = lPrev.z;
+                    }
                 });
+
+                let lastL = layers[layers.length - 1];
+                stObj.z = stObj.kots[lastL.id] || stObj.z;
+                stObj.elevation = stObj.z;
+
+                masterStations.push(stObj);
             });
 
             isRealDataLoaded = true;
@@ -651,7 +698,6 @@
         });
         ctx.setLineDash([]);
 
-        // DİKEY YAZILAR (OKUNABİLİRLİK DÜZELTİLDİ)
         masterStations.forEach((st, i) => {
             let px = getX(st.distance);
             ctx.beginPath(); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 0.5;
@@ -661,12 +707,12 @@
                 let cellCenterY = groundY + (idx * rowH) + (rowH/2);
                 ctx.save();
                 ctx.translate(px, cellCenterY); 
-                ctx.rotate(-Math.PI/2); // Yazıyı aşağıdan yukarıya okunacak şekilde çevir
+                ctx.rotate(-Math.PI/2);
                 ctx.fillStyle = l.color; 
                 ctx.font = `bold ${fontSize}px Arial`; 
                 ctx.textAlign = "center";
-                ctx.textBaseline = "middle"; // Çizgiye tam ortala
-                ctx.fillText(st.kots[l.id].toFixed(2), 0, 4); // 4px sağa kaydırıp çizgiden kurtar
+                ctx.textBaseline = "middle";
+                ctx.fillText(st.kots[l.id].toFixed(2), 0, 4);
                 ctx.restore();
             });
 
@@ -734,7 +780,7 @@
             return;
         }
 
-        setLoading(true, 'DXF dosyası katmanları derleniyor...', 'Basitleştirilmiş Bloklar Oluşturuluyor...', 20);
+        setLoading(true, 'Uyumlu DXF dosyası derleniyor...', 'AutoCAD R12 Renkli Standartı...', 30);
         setTimeout(() => {
             try {
                 const sX = parseFloat(document.getElementById('pScaleX').value) || 2.5;
@@ -758,8 +804,9 @@
 
                 let dxf = [];
 
+                // DÜZELTME: AutoCAD Null Header hatasını çözen AC1009 (R12) Yapısı
                 dxf.push("0","SECTION","2","HEADER");
-                dxf.push("9","$ACADVER","1","AC1015");
+                dxf.push("9","$ACADVER","1","AC1009");
                 dxf.push("0","ENDSEC");
 
                 dxf.push("0","SECTION","2","TABLES");
@@ -767,7 +814,6 @@
                 dxf.push("0","LTYPE","2","CONTINUOUS","70","0","3","Solid line","72","65","73","0","40","0.0");
                 dxf.push("0","ENDTAB");
 
-                // SADELEŞTİRİLMİŞ LAYER BLOKLARI (Hata Vermez)
                 dxf.push("0","TABLE","2","LAYER","70",String(layers.length + 8));
                 const sysLayers = [
                     { name:"TABLO_GRID",     color:251 },
@@ -867,9 +913,9 @@
 
                 dxf.push("0","ENDSEC","0","EOF");
                 
-                downloadFile(dxf.join('\r\n'), `Boykesit_Profesyonel_Cizim.dxf`, 'application/dxf');
+                downloadFile(dxf.join('\r\n'), `Boykesit_Uyumlu_Renkli.dxf`, 'application/dxf');
                 setLoading(false);
-                alert("✅ Düzeltilmiş ve Uyumlu DXF Çıktısı Üretildi!");
+                alert("✅ AutoCAD ile Tam Uyumlu Renkli DXF Başarıyla Üretildi!");
             } catch(e) {
                 alert("Hata: " + e.message);
                 setLoading(false);
